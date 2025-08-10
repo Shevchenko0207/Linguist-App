@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Мої колоди{% endblock %}
+
+{% block content %}
+<style>
+    /* Стилі для анімації модальних вікон */
+    @keyframes fade-in-down {
+        0% {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-down {
+        animation: fade-in-down 0.3s ease-out forwards;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 50;
+    }
+
+    .modal-backdrop.active {
+        display: flex;
+    }
+</style>
+
+<h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Мої колоди</h1>
+<div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+    <!-- Помаранчева кнопка "Створити колоду" -->
+    <button id="create-deck-btn"
+        class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+        <i class="fas fa-plus-circle"></i>
+        <span>Створити колоду</span>
+    </button>
+    <!-- Червона кнопка "Видалити колоду" -->
+    <button id="main-delete-deck-btn"
+        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+        <i class="fas fa-trash-alt"></i>
+        <span>Видалити колоду</span>
+    </button>
+</div>
+
+{% if decks %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for deck in decks %}
+    <div
+        class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 flex flex-col justify-between transform transition-transform hover:scale-105 duration-300">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ deck.name }}</h2>
+            <p class="text-gray-500 mb-4">{{ deck.cards|length }} карток</p>
+        </div>
+        <div class="mt-4 flex space-x-2">
+            <a href="{{ url_for('show_cards_in_deck', deck_id=deck.id) }}"
+                class="flex-1 text-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 shadow">
+                Переглянути
+            </a>
+            <a href="{{ url_for('review_deck', deck_id=deck.id) }}"
+                class="flex-1 text-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-300 shadow">
+                Практика
+            </a>
+            <!-- Кнопка для відкриття кастомного модального вікна -->
+            <button onclick="openDeleteModal({{ deck.id }})"
+                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 shadow">
+                Видалити
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="mt-12 text-center text-gray-500">
+    <p class="text-xl">У вас ще немає жодної колоди. Створіть свою першу колоду, щоб почати вивчати нові слова!</p>
+</div>
+{% endif %}
+
+<!-- Модальне вікно для додавання колоди -->
+<div id="add-deck-modal" class="modal-backdrop">
+    <div class="relative p-8 border w-full max-w-lg shadow-lg rounded-xl bg-white animate-fade-in-down"
+        onclick="event.stopPropagation();">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold text-gray-800">Створити нову колоду</h3>
+            <button class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                onclick="document.getElementById('add-deck-modal').classList.remove('active')">&times;</button>
+        </div>
+        <form action="{{ url_for('add_deck') }}" method="POST">
+            <div class="mb-4">
+                <label for="deck_name" class="block text-gray-700 text-sm font-bold mb-2">Назва колоди:</label>
+                <input type="text" id="deck_name" name="deck_name"
+                    class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300"
+                    onclick="document.getElementById('add-deck-modal').classList.remove('active')">
+                    Скасувати
+                </button>
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                    Зберегти
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальне вікно для підтвердження видалення (окремої колоди) -->
+<div id="confirm-delete-modal" class="modal-backdrop">
+    <div class="relative p-8 border w-full max-w-lg shadow-lg rounded-xl bg-white animate-fade-in-down"
+        onclick="event.stopPropagation();">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Підтвердження видалення</h3>
+        <p class="text-gray-600 mb-6">Ви впевнені, що хочете видалити цю колоду та всі картки в ній?</p>
+        <div class="flex justify-end space-x-4">
+            <button onclick="closeDeleteModal()"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                Скасувати
+            </button>
+            <form id="delete-deck-form" method="POST" style="display:inline;">
+                <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                    Видалити
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно для головної кнопки "Видалити" -->
+<div id="main-delete-modal" class="modal-backdrop">
+    <div class="relative p-8 border w-full max-w-lg shadow-lg rounded-xl bg-white animate-fade-in-down"
+        onclick="event.stopPropagation();">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Видалення колод</h3>
+        <p class="text-gray-600 mb-6">Ця кнопка призначена для масового видалення колод у майбутньому. Будь ласка,
+            використовуйте кнопки "Видалити" на окремих колодах, щоб видалити їх.</p>
+        <div class="flex justify-end">
+            <button onclick="document.getElementById('main-delete-modal').classList.remove('active')"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                Зрозуміло
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Відкриття модального вікна створення колоди
+    document.getElementById('create-deck-btn').addEventListener('click', function () {
+        document.getElementById('add-deck-modal').classList.add('active');
+    });
+
+    // Відкриття модального вікна головної кнопки видалення
+    document.getElementById('main-delete-deck-btn').addEventListener('click', function () {
+        document.getElementById('main-delete-modal').classList.add('active');
+    });
+
+    // Функція для відкриття модального вікна видалення конкретної колоди
+    function openDeleteModal(deckId) {
+        const modal = document.getElementById('confirm-delete-modal');
+        const form = document.getElementById('delete-deck-form');
+        // Оновлюємо URL форми для конкретної колоди
+        form.action = `/delete_deck/${deckId}`;
+        modal.classList.add('active');
+    }
+
+    // Функція для закриття модального вікна видалення
+    function closeDeleteModal() {
+        document.getElementById('confirm-delete-modal').classList.remove('active');
+    }
+
+    // Закриття модальних вікон при натисканні на бекдроп
+    document.getElementById('add-deck-modal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            this.classList.remove('active');
+        }
+    });
+
+    document.getElementById('confirm-delete-modal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    document.getElementById('main-delete-modal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            this.classList.remove('active');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Реєстрація</h1>
+    <form action="{{ url_for('register') }}" method="post" class="space-y-4">
+        <div>
+            <label for="name" class="block text-gray-700 font-medium">Ім'я</label>
+            <input type="text" id="name" name="name" required value="{{ name|default('') }}"
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <label for="email" class="block text-gray-700 font-medium">Електронна пошта</label>
+            <input type="email" id="email" name="email" required value="{{ email|default('') }}"
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <label for="password" class="block text-gray-700 font-medium">Пароль</label>
+            <input type="password" id="password" name="password" required
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200 w-full">
+            Зареєструватися
+        </button>
+    </form>
+    <p class="mt-4 text-center text-gray-600">
+        Вже маєте акаунт? <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Увійти</a>
+    </p>
+</div>
+{% endblock %}

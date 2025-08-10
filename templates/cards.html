@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Картки в {{ deck.name }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-4xl font-extrabold text-gray-800">Картки в "{{ deck.name }}"</h1>
+    <a href="{{ url_for('index') }}"
+        class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors duration-300 shadow">
+        Назад до колод
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {% for card in cards %}
+    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 flex flex-col justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ card.word }}</h2>
+            <p class="text-xl text-gray-600 mb-2">{{ card.translation }}</p>
+            {% if card.tip %}
+            <p class="text-gray-500 text-sm italic">Підказка: {{ card.tip }}</p>
+            {% endif %}
+        </div>
+        <div class="mt-4 flex space-x-2">
+            <a href="{{ url_for('edit_card', card_id=card.id) }}"
+                class="flex-1 text-center px-4 py-2 bg-stone-500 text-white rounded-lg hover:bg-stone-600 transition-colors duration-300 shadow">
+                Редагувати
+            </a>
+            <form action="{{ url_for('delete_card', card_id=card.id) }}" method="post" class="flex-shrink-0"
+                onsubmit="return confirm('Ви впевнені, що хочете видалити цю картку?');">
+                <button type="submit"
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 shadow">
+                    Видалити
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Форма для додавання нової картки -->
+<div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Додати нову картку</h2>
+    <form action="{{ url_for('add_card_to_deck', deck_id=deck.id) }}" method="post" class="space-y-4">
+        <div>
+            <label for="word" class="block text-gray-700 font-medium">Слово:</label>
+            <input type="text" id="word" name="word" required
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+        <div>
+            <label for="translation" class="block text-gray-700 font-medium">Переклад:</label>
+            <input type="text" id="translation" name="translation" required
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+        <div>
+            <label for="tip" class="block text-gray-700 font-medium">Підказка (необов'язково):</label>
+            <input type="text" id="tip" name="tip"
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+        <button type="submit"
+            class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200 w-full">
+            Додати картку
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .card-container {
+        perspective: 1000px;
+    }
+
+    .card {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .card.is-flipped {
+        transform: rotateY(180deg);
+    }
+
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background-color: white;
+        color: #1f2937;
+    }
+
+    .card-face-back {
+        transform: rotateY(180deg);
+    }
+</style>
+
+<div class="flex flex-col items-center justify-center p-4">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-6">Практика: {{ deck.name }}</h2>
+
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
+        <p class="text-gray-500 mb-2">
+            Картка <span id="currentCardIndex">1</span> з <span id="totalCardsCount">{{ cards | length }}</span>
+        </p>
+        <div class="card-container h-64 sm:h-80 w-full mb-4">
+            <div id="flashcard" class="card">
+                <div class="card-face p-8">
+                    <span id="cardWord" class="text-4xl font-bold text-blue-600"></span>
+                </div>
+                <div class="card-face card-face-back p-8">
+                    <p class="text-xl text-gray-500 mb-2">Переклад:</p>
+                    <span id="cardTranslation" class="text-3xl font-bold text-gray-800 mb-4"></span>
+                    <p class="text-xl text-gray-500 mb-2">Підказка:</p>
+                    <span id="cardTip" class="text-lg text-gray-600"></span>
+                </div>
+            </div>
+        </div>
+
+        <button id="flipButton"
+            class="bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 mb-4 w-full sm:w-auto">Показати
+            переклад</button>
+
+        <div
+            class="flex flex-col sm:flex-row justify-between items-center mt-4 w-full space-y-2 sm:space-y-0 sm:space-x-2">
+            <a href="{{ url_for('index') }}"
+                class="w-full sm:w-auto bg-gray-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition duration-300 flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                <span>Мої колоди</span>
+            </a>
+            <button id="prevButton"
+                class="w-full sm:w-1/2 bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-400 transition duration-300 flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span>Назад</span>
+            </button>
+            <button id="nextButton"
+                class="w-full sm:w-1/2 bg-green-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-green-600 transition duration-300 flex items-center justify-center space-x-2">
+                <span>Далі</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 0 010 1.414l-4 4a1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Вставляємо дані карток прямо в JavaScript, перетворюючи їх у JSON
+    const cardsData = JSON.parse('{{ cards | tojson | safe }}');
+
+    const flashcard = document.getElementById('flashcard');
+    const cardWord = document.getElementById('cardWord');
+    const cardTranslation = document.getElementById('cardTranslation');
+    const cardTip = document.getElementById('cardTip');
+    const flipButton = document.getElementById('flipButton');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const currentCardIndexSpan = document.getElementById('currentCardIndex');
+    const totalCardsCountSpan = document.getElementById('totalCardsCount');
+
+    let currentCardIndex = 0;
+    let isFlipped = false;
+
+    function updateButtonState() {
+        if (cardsData.length <= 1) {
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+        } else {
+            prevButton.disabled = currentCardIndex === 0;
+            nextButton.disabled = currentCardIndex === cardsData.length - 1;
+        }
+    }
+
+    function updateCardDisplay() {
+        if (cardsData.length === 0) {
+            cardWord.textContent = 'У цій колоді немає карток.';
+            cardTranslation.textContent = '';
+            cardTip.textContent = '';
+            totalCardsCountSpan.textContent = 0;
+            currentCardIndexSpan.textContent = 0;
+            flipButton.disabled = true;
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+            return;
+        }
+
+        const currentCard = cardsData[currentCardIndex];
+        cardWord.textContent = currentCard.word;
+        cardTranslation.textContent = currentCard.translation;
+        cardTip.textContent = currentCard.tip || 'Немає підказки';
+        currentCardIndexSpan.textContent = currentCardIndex + 1;
+
+        flashcard.classList.remove('is-flipped');
+        isFlipped = false;
+
+        flipButton.style.display = 'block';
+        flipButton.disabled = false;
+
+        updateButtonState();
+    }
+
+    function flipCard() {
+        if (!isFlipped) {
+            flashcard.classList.add('is-flipped');
+            isFlipped = true;
+            flipButton.style.display = 'none';
+        }
+    }
+
+    function showNextCard() {
+        if (currentCardIndex < cardsData.length - 1) {
+            currentCardIndex++;
+            updateCardDisplay();
+        }
+    }
+
+    function showPrevCard() {
+        if (currentCardIndex > 0) {
+            currentCardIndex--;
+            updateCardDisplay();
+        }
+    }
+
+    flipButton.addEventListener('click', flipCard);
+    nextButton.addEventListener('click', showNextCard);
+    prevButton.addEventListener('click', showPrevCard);
+
+    // Initial call
+    updateCardDisplay();
+</script>
+{% endblock %}

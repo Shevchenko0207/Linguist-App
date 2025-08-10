@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування картки{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Редагувати картку</h1>
+    <form action="{{ url_for('update_card', card_id=card.id) }}" method="post" class="space-y-4">
+        <div>
+            <label for="word" class="block text-gray-700 font-medium">Слово:</label>
+            <input type="text" id="word" name="word" value="{{ card.word }}" required
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <label for="translation" class="block text-gray-700 font-medium">Переклад:</label>
+            <input type="text" id="translation" name="translation" value="{{ card.translation }}" required
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <label for="tip" class="block text-gray-700 font-medium">Підказка:</label>
+            <input type="text" id="tip" name="tip" value="{{ card.tip if card.tip else '' }}"
+                class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit"
+            class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200 w-full">
+            Зберегти зміни
+        </button>
+    </form>
+    <a href="{{ url_for('show_cards_in_deck', deck_id=card.deck_id) }}"
+        class="mt-4 block text-center text-blue-500 hover:underline">
+        Скасувати
+    </a>
+</div>
+{% endblock %}

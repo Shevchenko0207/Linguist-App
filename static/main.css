@@ -1,0 +1,134 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 2em;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+h1,
+h2 {
+    color: #212529;
+}
+
+.card-list {
+    list-style: none;
+    padding: 0;
+}
+
+.card-item {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1em;
+    padding: 1.5em;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-content {
+    flex-grow: 1;
+}
+
+.card-actions .btn {
+    border: none;
+    /* Прибрати стандартну рамку кнопок */
+}
+
+.card-actions .btn {
+    flex: 1;
+    /* Кнопки займають однакову ширину */
+    max-width: 120px;
+    /* Щоб не розтягувались занадто */
+    border: none;
+    /* Прибрати стандартну рамку кнопок */
+}
+
+.add-card-form {
+    margin-top: 2em;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    /* Виправлена рамка */
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 0.75em;
+    margin-bottom: 1em;
+    box-sizing: border-box;
+    border: 2px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.btn {
+    display: inline-flex;
+    /* Вирівнювання тексту по центру */
+    align-items: center;
+    justify-content: center;
+    /*width: 120px;
+        /* Фіксована ширина для всіх кнопок */
+    /* height: 40px;*/
+    /* Фіксована висота для всіх кнопок */
+    padding: 0.5em;
+    /* Однакові відступи */
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    text-align: center;
+    box-sizing: border-box;
+    /* Щоб padding не збільшував розміри */
+    white-space: nowrap;
+    /* Заборона переносу тексту */
+}
+
+.add-btn {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.add-btn:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+    color: #212529;
+    border-color: #e0a800;
+}
+
+.edit-btn:hover {
+    background-color: #e0a800;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border-color: #c82333;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    border-color: #5a6268;
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+}
